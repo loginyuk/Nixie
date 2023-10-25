@@ -32,10 +32,18 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define A_PIN GPIO_PIN_8
-#define B_PIN GPIO_PIN_11
-#define C_PIN GPIO_PIN_10
-#define D_PIN GPIO_PIN_9
+int digits[10][4] = {
+    {0, 0, 0, 0},
+    {0, 0, 0, 1},
+    {0, 0, 1, 0},
+    {0, 0, 1, 1},
+    {0, 1, 0, 0},
+    {0, 1, 0, 1},
+    {0, 1, 1, 0},
+    {0, 1, 1, 1},
+    {1, 0, 0, 0},
+    {1, 0, 0, 1}
+};
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -71,15 +79,6 @@ void MX_USB_HOST_Process(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
-/* Function to set the К155ИН1 to display a specific digit */
-void SetDigit(int digit) {
-    // Map the digits to the correct pins (A, B, C, D)
-    HAL_GPIO_WritePin(GPIOD, A_PIN, (digit & 0x01) ? GPIO_PIN_SET : GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(GPIOD, B_PIN, (digit & 0x02) ? GPIO_PIN_SET : GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(GPIOD, C_PIN, (digit & 0x04) ? GPIO_PIN_SET : GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(GPIOD, D_PIN, (digit & 0x08) ? GPIO_PIN_SET : GPIO_PIN_RESET);
-}
 
 /* USER CODE END 0 */
 
@@ -127,11 +126,16 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    // Display a digit (0-9) using the К155ИН1
+    /* USER CODE END WHILE */
+    MX_USB_HOST_Process();
     for (int i = 0; i < 10; i++) {
-       SetDigit(i);
-       HAL_Delay(1000); // Delay for 1 second
-    }
+                    HAL_GPIO_WritePin(GPIOD, GPIO_A_Pin, digits[i][3] ? GPIO_PIN_SET : GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(GPIOD, GPIO_B_Pin, digits[i][2] ? GPIO_PIN_SET : GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(GPIOD, GPIO_C_Pin, digits[i][1] ? GPIO_PIN_SET : GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(GPIOD, GPIO_D_Pin, digits[i][0] ? GPIO_PIN_SET : GPIO_PIN_RESET);
+                    HAL_Delay(1000);
+                }
+    /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
 }
@@ -154,7 +158,7 @@ void SystemClock_Config(void)
   * in the RCC_OscInitTypeDef structure.
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 4;
@@ -367,7 +371,8 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(OTG_FS_PowerSwitchOn_GPIO_Port, OTG_FS_PowerSwitchOn_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, LD4_Pin|LD3_Pin|LD5_Pin|LD6_Pin
+  HAL_GPIO_WritePin(GPIOD, GPIO_D_Pin|GPIO_C_Pin|GPIO_B_Pin|GPIO_A_Pin
+                          |LD4_Pin|LD3_Pin|LD5_Pin|LD6_Pin
                           |Audio_RST_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : DATA_Ready_Pin */
@@ -402,9 +407,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : LD4_Pin LD3_Pin LD5_Pin LD6_Pin
+  /*Configure GPIO pins : GPIO_D_Pin GPIO_C_Pin GPIO_B_Pin GPIO_A_Pin
+                           LD4_Pin LD3_Pin LD5_Pin LD6_Pin
                            Audio_RST_Pin */
-  GPIO_InitStruct.Pin = LD4_Pin|LD3_Pin|LD5_Pin|LD6_Pin
+  GPIO_InitStruct.Pin = GPIO_D_Pin|GPIO_C_Pin|GPIO_B_Pin|GPIO_A_Pin
+                          |LD4_Pin|LD3_Pin|LD5_Pin|LD6_Pin
                           |Audio_RST_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
